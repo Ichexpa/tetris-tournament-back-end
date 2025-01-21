@@ -42,7 +42,6 @@ def login():
     print("EMAIL " + request.form.get("email", ''))
     print("CONTRASEÑA " + request.form.get("password", ''))
     token, result = AuthService(app.db).login(user)
-    
     if token:
         return jsonify({"token": token, "role": result}), 200
         
@@ -74,11 +73,8 @@ def validate_token():
                 "name": f"{user.first_name} {user.last_name}",
                 "email": user.email,
                 "role": role,
-                "score": user.score if role == "student" else None,
-                "ranking": user.ranking if role == "student" else None,
-                ##PENDIENTE POR SI ORGANIZADOR ADQUIERE CAMPOS MAS ADELANTE
-                ##"department": user.department if role == "professor" else None,
-                ##"specialty": user.specialty if role == "professor" else None
+                "score": user.score if role == "player" else None,
+                "ranking": user.ranking if role == "player" else None,
             }), 200
         else:
             abort(404)

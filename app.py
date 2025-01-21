@@ -7,6 +7,7 @@ from src.controllers import *
 from flask_cors import CORS
 from src.utils.jwt_config import init_jwt
 from src.utils.error_handlers import register_error_handlers
+from src.controllers.tournament_controller import tournamnet_routes_bp
 from src.controllers.auth_controller import auth_routes_bp
 from src.controllers.player_controller import player_routes_bp
 from src.controllers.organizer_controller import organizer_routes_bp
@@ -44,10 +45,10 @@ def create_app():
 
     # Register routes
 
-    app.register_blueprint(auth_routes_bp)
-    ##app.register_blueprint(activity_routes_bp)
+    app.register_blueprint(auth_routes_bp)    
     app.register_blueprint(player_routes_bp)
     app.register_blueprint(organizer_routes_bp)
+    app.register_blueprint(tournamnet_routes_bp)
 
     @app.route("/")
     def home():

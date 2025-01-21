@@ -26,7 +26,7 @@ class AuthService:
             
             saved_user = self.user_repository.get_user_by_email(user.email)
 
-            
+            print(saved_user)            
             if not saved_user:
                 print("Credenciales invalidas")
                 return None, "INVALID_CREDENTIALS"

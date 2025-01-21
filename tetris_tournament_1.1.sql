@@ -58,15 +58,17 @@ DROP TABLE IF EXISTS `tournaments`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `tournaments` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(255) NOT NULL,
-  `capacidad` int DEFAULT '8',
+  `name` varchar(255) NOT NULL,
+  `capacity` int DEFAULT '8',
   `total_points` int NOT NULL,
   `organizer_id` int unsigned NOT NULL,
-  `estado` enum('Activo','En curso','Finalizado','Cancelado') NOT NULL DEFAULT 'Activo',
+  `status` enum('Activo','En curso','Finalizado','Cancelado') NOT NULL DEFAULT 'Activo',
+  `start_date` date NOT NULL,
+  `end_date` date NOT NULL,
   PRIMARY KEY (`id`),
   KEY `fk_tournament_organizer` (`organizer_id`),
   CONSTRAINT `fk_tournament_organizer` FOREIGN KEY (`organizer_id`) REFERENCES `organizers` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -116,4 +118,4 @@ CREATE TABLE `users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-01-18 18:37:56
+-- Dump completed on 2025-01-20 23:53:23
