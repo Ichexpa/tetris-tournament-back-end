@@ -173,7 +173,7 @@ class UserRepository:
             try:
                 cursor = conn.cursor()
                 res = cursor.callproc(
-                    "CreateStudent",
+                    "create_player",
                     (
                         player.email,
                         player.password,

@@ -14,8 +14,10 @@ tournamnet_routes_bp = Blueprint("tournament_bp",__name__,url_prefix="/api/tourn
 @tournamnet_routes_bp.route("/",methods=["GET"])
 def get_tournaments():
     tournaments = TournamentRepository(app.db)
+    filter = request.args
+    print(filter)
     if tournaments:
-        return jsonify(tournaments.find_all()),200
+        return jsonify(tournaments.find_all(filter)),200
     else:
         abort(404)
 
@@ -28,7 +30,8 @@ def create_tournament():
                                       organizer_id=request.json.get("organizer_id"),
                                       status=request.json.get("status"),
                                       start_date=request.json.get("start_date"),
-                                      end_date=request.json.get("end_date"))
+                                      end_date=request.json.get("end_date"),
+                                      best_of=request.json.get("best_of"))
     try:
         tournament = TournamentRepository(app.db).save(tournament_to_create)
     except IntegrityError:

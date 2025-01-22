@@ -9,6 +9,7 @@ class Tournament():
         self.status = kwargs.get("status")
         self.start_date = kwargs.get("start_date")
         self.end_date = kwargs.get("end_date")
+        self.best_of = kwargs.get("best_of")
     
     def __repr__(self):
-        print(f'<Tournament {self.name} >')  
+        return f'<Tournament {self.name} >' 
