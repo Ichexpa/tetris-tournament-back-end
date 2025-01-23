@@ -39,8 +39,6 @@ def register_player():
 def login():
     user = User(email=request.form.get("email", ''),
                 password=request.form.get("password", ''))
-    print("EMAIL " + request.form.get("email", ''))
-    print("CONTRASEÑA " + request.form.get("password", ''))
     token, result = AuthService(app.db).login(user)
     if token:
         return jsonify({"token": token, "role": result}), 200
