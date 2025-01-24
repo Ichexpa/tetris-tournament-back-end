@@ -42,3 +42,27 @@ def create_tournament():
         else:
             abort(505)
 
+@tournamnet_routes_bp.route("/update",methods=["PATCH"])
+def update_tournament():    
+    data_t = Tournament(**request.json)
+    try:
+        TournamentRepository(app.db).update(data_t)
+    except KeyError:
+        return jsonify({"message":"No se envio un id para la actualizacion"}),400 
+    except IntegrityError:
+        abort(404)
+    else:
+        return jsonify({"message":"Se actualizo el torneo con éxito"}),201 
+
+@tournamnet_routes_bp.route("/<int:tournament_id>",methods=["DELETE"])
+def delete_tournament(tournament_id):    
+    try:
+        tournament = Tournament(id=tournament_id)
+        print(tournament.id)
+        TournamentRepository(app.db).delete(tournament)
+    except IndexError:
+        return jsonify({"message":"No se envio un id para la eliminacion"}),204
+    except IntegrityError:
+        abort(404)
+    else:
+        return jsonify({"message":"Se elimino el torneo con éxito"}),204

@@ -60,7 +60,6 @@ class AuthService:
     def create_player(self, player: Player):
         if not player.email:
             raise ValueError(f"Email empty.")
-        # Validar requisitos de contraseña (8-16 caracteres, una mayúscula y un número)
         if not (len(player.password) > 8 and len(player.password) < 16):
             raise AuthPasswordError(
                 f"Non conforming password. Password length: {len(player.password)}"
