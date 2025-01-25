@@ -179,8 +179,6 @@ class UserRepository:
                         player.password,
                         player.first_name,
                         player.last_name,
-                        player.score,
-                        player.ranking,
                         None,
                     ),
                 )

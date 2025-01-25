@@ -66,3 +66,15 @@ def delete_tournament(tournament_id):
         abort(404)
     else:
         return jsonify({"message":"Se elimino el torneo con éxito"}),204
+    
+@tournamnet_routes_bp.route("/brackets/<int:tournament_id>")
+def get_all_matches_tournament(tournament_id):
+    try:
+        tournament = Tournament(id=tournament_id)
+        list_matches  = TournamentRepository(app.db).get_all_matches_tournament(tournament)
+    except KeyError:
+        return jsonify({"message":"No se envio el id del torneo"}),204
+    except IntegrityError:
+        abort(404)
+    else:
+        return jsonify(list_matches),200
