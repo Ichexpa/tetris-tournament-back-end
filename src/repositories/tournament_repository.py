@@ -99,4 +99,58 @@ class TournamentRepository():
             else:
                 conn.commit()
    
-    
+    def get_all_matches_tournament(self,tournament:Tournament):
+        if not tournament.id:
+            raise KeyError
+        try:
+            query = """SELECT 
+                        m.id AS match_id,
+                        m.next_match_id,
+                        m.round AS round,
+                        m.score_p1,m.score_p2,
+                        m.winner_id,p1.id AS player1_id,
+                        CONCAT(u1.first_name," ",u1.last_name) AS player1_name,
+                        p2.id AS player2_id,
+                        CONCAT(u2.first_name," ",u2.last_name) AS player2_name
+                        FROM matches m
+                        LEFT JOIN players p1 ON m.player1_id = p1.id
+                        LEFT JOIN users u1 ON u1.id = p1.user_id
+                        LEFT JOIN players p2 ON m.player2_id = p2.id
+                        LEFT JOIN users u2 ON u2.id = p2.user_id
+                        WHERE m.tournament_id = %s
+                        ORDER BY m.round, m.id;"""
+            with self.db.get_connection() as conn:
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute(query,(tournament.id,))
+                results = cursor.fetchall()                
+                matches_list = []
+                for result in results : 
+                    matches_list.append({
+                        "id": result["match_id"],
+                        "nextMatchId": result["next_match_id"],
+                        "tournamentRoundText": result["round"],
+                        "participants": [
+                            {
+                                "id" : result["player1_id"],
+                                "resultText" : result["score_p1"],
+                                "isWinner" : (
+                                result.get("player1_id") is not None and
+                                result.get("player1_id") == result.get("winner_id")
+                            ),
+                                "name": result["player1_name"]
+                            },
+                            {
+                                "id" : result["player2_id"],
+                                "resultText" : result["score_p2"],
+                                "isWinner": (
+                                    result.get("player2_id") is not None and
+                                    result.get("player2_id") == result.get("winner_id")
+                                ),
+                                "name": result["player2_name"]
+                            }
+                        ]
+                    })                    
+        except IntegrityError:
+            raise
+        else:
+            return matches_list

@@ -18,8 +18,6 @@ def register_player():
                             password=request.form.get("password", ''),
                             first_name=request.form.get("first_name", ''),
                             last_name=request.form.get("last_name", ''),
-                            score=request.form.get("score", None),
-                            ranking=request.form.get("ranking", None),
     )
     try:
         saved_player = AuthService(app.db).create_player(player_to_register)
