@@ -23,7 +23,6 @@ def get_tournaments():
 
 @tournamnet_routes_bp.route("/create",methods=["POST"])
 def create_tournament():
-
     tournament_to_create = Tournament(name=request.json.get("name"),
                                       capacity=request.json.get("capacity"),
                                       total_points=request.json.get("total_points"),

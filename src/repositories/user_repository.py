@@ -16,7 +16,7 @@ class UserRepository:
                 query = """
                 SELECT u.id AS user_id, u.email, p.id AS player_id, o.id AS organizer_id,
                 u.email, u.first_name, u.last_name, u.created_at,
-                p.score, p.ranking,
+                p.score,
                 CASE WHEN p.id IS NOT NULL THEN TRUE ELSE FALSE END AS is_player
                 FROM users u
                 LEFT JOIN players p ON u.id = p.user_id
@@ -32,8 +32,7 @@ class UserRepository:
                             user_id=result["user_id"],
                             first_name=result["first_name"],
                             last_name=result["last_name"],
-                            score=result["score"],
-                            ranking=result["ranking"]
+                            score=result["score"]
                         )
                     else:
                         user = Organizer(
@@ -121,7 +120,6 @@ class UserRepository:
                         first_name=result["first_name"],
                         last_name=result["last_name"],                        
                         score=result["score"],
-                        ranking=result["ranking"],
                         created_at=result["created_at"]
                     )
                     players.append(player)

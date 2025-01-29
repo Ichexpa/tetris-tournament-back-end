@@ -1,6 +1,8 @@
 from src.models.tournament import Tournament
 from mysql.connector.errors import IntegrityError
-
+from exceptions.exceptions_database import NotValidCapacity,FutureDateNotAllowedError
+from datetime import datetime
+from src.utils.validate_functions import valid_date
 class TournamentRepository():
 
     def __init__(self,db):
@@ -35,6 +37,12 @@ class TournamentRepository():
     
     def save(self,tournament:Tournament):
         """Crea un torneo"""
+        valid_capacity = [8,16,32,64]
+        capacity = int(tournament.capacity)
+        if(capacity not in valid_capacity):
+            raise NotValidCapacity
+        if(not valid_date(tournament.start_date,tournament.end_date)):
+            raise FutureDateNotAllowedError
         with self.db.get_connection() as conn:
             cursor = conn.cursor()
             try:
@@ -46,7 +54,7 @@ class TournamentRepository():
                                  tournament.status or "Activo",
                                  tournament.start_date,
                                  tournament.end_date,
-                                 tournament.best_of,
+                                 tournament.best_of or 3,
                                  None))
             except IntegrityError:
                 conn.rollback()

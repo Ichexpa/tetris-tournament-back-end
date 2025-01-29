@@ -70,7 +70,6 @@ def validate_token():
                 "email": user.email,
                 "role": role,
                 "score": user.score if role == "player" else None,
-                "ranking": user.ranking if role == "player" else None,
             }), 200
         else:
             abort(404)
