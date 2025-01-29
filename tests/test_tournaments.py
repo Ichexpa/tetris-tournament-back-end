@@ -4,8 +4,9 @@ from src.db import Database
 from src.models.tournament import Tournament
 from src.repositories.tournament_repository import TournamentRepository
 from tests.utils import cleanup
-from mysql.connector.errors import IntegrityError, DataError
-from exceptions.exceptions_database import NotValidCapacity,FutureDateNotAllowedError
+from mysql.connector.errors import IntegrityError
+from exceptions.exceptions_database import NotValidCapacity,FutureDateNotAllowedError,StatusNotAllowed
+from datetime import datetime
 
 @pytest.fixture
 def config():
@@ -119,3 +120,69 @@ def test_save_with_bad_date(tournament_repository):
     with pytest.raises(FutureDateNotAllowedError):
         tournament_repository.save(tournament)
 
+##SUT :update
+
+def test_update_all_fields_success(tournament_repository):
+    # Arrange
+    tournament = Tournament(
+        id=1,
+        name="Torneo modificado",
+        capacity= 16,
+        total_points= 500,
+        status="En curso",
+        organizer_id=2,        
+        start_date= "2025-02-15",
+        end_date = "2025-02-25",
+        best_of = 3
+    )
+
+    # Act
+    tournament_repository.update(tournament)
+    updated_tournament = tournament_repository.get_tournament_by_id(Tournament(id=1))
+    # Assert    
+    assert updated_tournament.name == "Torneo modificado"
+    assert updated_tournament.capacity == 16
+    assert updated_tournament.total_points == 500
+    assert updated_tournament.status == "En curso"
+    assert updated_tournament.start_date == datetime.strptime("2025-02-15", "%Y-%m-%d").date() 
+    assert updated_tournament.end_date == datetime.strptime("2025-02-25", "%Y-%m-%d").date()
+    assert updated_tournament.organizer_id == 2
+    
+
+def test_update_partial_fields(tournament_repository):
+    # Arrange
+    original_tournament = tournament_repository.get_tournament_by_id(Tournament(id=1))
+    tournament = Tournament(
+        id=1,
+        name="Actualización parcial",
+        status = "En curso",
+        total_points = 450
+    )
+    # Act
+    tournament_repository.update(tournament)
+    updated_tournament = tournament_repository.get_tournament_by_id(Tournament(id=1))
+
+    # Assert
+    assert updated_tournament.name == "Actualización parcial"
+    assert updated_tournament.capacity == original_tournament.capacity
+    assert updated_tournament.total_points == 450
+    assert updated_tournament.status == "En curso"
+    assert updated_tournament.start_date == original_tournament.start_date
+    assert updated_tournament.end_date == original_tournament.end_date
+    assert updated_tournament.organizer_id == original_tournament.organizer_id
+
+def test_update_with_invalid_status(tournament_repository):
+  # Arrange
+    original_tournament = tournament_repository.get_tournament_by_id(Tournament(id=1))
+    tournament = Tournament(
+        id=1,
+        status = "Estado no existente"
+    )
+
+    # Act & Assert
+    with pytest.raises(StatusNotAllowed):
+        tournament_repository.update(tournament)
+        
+    #Assert
+    current_tournament = tournament_repository.get_tournament_by_id(Tournament(id=1))
+    assert current_tournament.status == original_tournament.status

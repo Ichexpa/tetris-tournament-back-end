@@ -64,7 +64,6 @@ class UserRepository:
                 """
                 cursor.execute(query, (email,))
                 result = cursor.fetchone()
-                print("TODO OK")
                 print(result)
                 if result:
                     if result["is_player"]:
@@ -78,8 +77,7 @@ class UserRepository:
                             id=result["organizer_id"],
                             user_id=result["user_id"],
                             password=result["password"],
-                        )
-                    print("ENCONTRO COINCIDENCIAS")    
+                        )   
                     user.email = email
                     
                     return user
