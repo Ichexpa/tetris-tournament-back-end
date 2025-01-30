@@ -66,6 +66,7 @@ gespro/
 - bcrypt 4.2.1
 - Flask Cors 5.0.0
 - Python Dotenv 1.0.1
+- Pytest
 
 ## Instalación
 

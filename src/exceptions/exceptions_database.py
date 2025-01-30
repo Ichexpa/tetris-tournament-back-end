@@ -2,6 +2,11 @@ class UniqueViolationError(Exception):
     """Excepción para manejo de violación de clave única."""
     pass
 
+class InsufficentsPlayers(Exception):
+    def __init__(self, message="Faltan jugadores para iniciar el torneo"):
+        self.message = message
+        super().__init__(self.message)
+
 class NotValidCapacity(Exception):
     def __init__(self, message="La capacidad no es valida para el torneo"):
         self.message = message

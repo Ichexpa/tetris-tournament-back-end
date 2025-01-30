@@ -1,6 +1,8 @@
 from src.models.tournament_players import TournamentPlayers
 from mysql.connector.errors import IntegrityError
 from src.exceptions.exceptions_database import UniqueViolationError
+from src.models.tournament import Tournament
+
 class TournamentPlayersRepository():
 
     def __init__(self,db):
@@ -33,6 +35,24 @@ class TournamentPlayersRepository():
         else:
             return False
         
+    def get_participants_tournament(self,tournament:Tournament):
+        if not tournament.id:
+            raise KeyError
+        try:
+            query="SELECT * FROM tournamentsxplayers WHERE tournament_id  = %s"
+            with self.db.get_connection() as conn:
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute(query,(tournament.id,))
+                list_participants = []
+                results = cursor.fetchall()
+                for result in results:
+                    list_participants.append(TournamentPlayers(id=result["id"],
+                                      player_id=result["player_id"],
+                                      tournament_id=result["tournament_id"],))
+                return list_participants
+        except IntegrityError:
+            raise 
+
     def is_exceeded(self,tournament_id):
         """Verfica si el torneo esta lleno"""
 
