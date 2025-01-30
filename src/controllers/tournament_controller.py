@@ -5,6 +5,7 @@ from flask import abort
 from flask import Blueprint
 
 from src.models.tournament import Tournament
+from src.models.user import Player
 from src.repositories.tournament_repository import TournamentRepository
 from src.db import DbError
 from mysql.connector.errors import IntegrityError
@@ -101,4 +102,14 @@ def players_inscribed_tournament(tournament_id):
     else:
         lista_player_dict = [obj.__dict__ for obj in list_players]
         return jsonify(lista_player_dict),200
+    
+@tournament_routes_bp.route("/player_history/<int:player_id>",methods = ["GET"])
+def players_history_matches(player_id):
+    try:        
+        player = Player(id=player_id)
+        list_matches = TournamentRepository(app.db).get_history_tournament_player(player)
+    except IntegrityError:
+        abort(404)
+    else:
+        return jsonify(list_matches),200
     
