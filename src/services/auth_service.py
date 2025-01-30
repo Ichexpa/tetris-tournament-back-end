@@ -28,7 +28,6 @@ class AuthService:
 
             print(saved_user)            
             if not saved_user:
-                print("Credenciales invalidas")
                 return None, "INVALID_CREDENTIALS"
                 
             # Segunda validación: contraseña correcta    
@@ -54,7 +53,6 @@ class AuthService:
                 return token, "organizer"
                 
         except Exception as e:
-            print("HOLA")
             return None, "SERVER_ERROR"
 
     def create_player(self, player: Player):

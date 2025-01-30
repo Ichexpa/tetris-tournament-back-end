@@ -4,6 +4,7 @@ from mysql.connector.errors import IntegrityError
 from src.exceptions.exceptions_database import UniqueViolationError
 from src.repositories.tournament_repository import TournamentRepository
 from src.models.tournament import Tournament
+from src.models.user import Player
 from mysql.connector.errors import IntegrityError,DatabaseError
 
 
@@ -62,7 +63,7 @@ class MatchRepository():
                 else:
                     return None
         except IntegrityError:
-            raise 
+            raise     
 
     def update_winner_next_match(self,match:Match):
         set_clause=None
@@ -89,3 +90,5 @@ class MatchRepository():
                     conn.commit()
         else:
             print("No se encontro el next match")
+
+ 

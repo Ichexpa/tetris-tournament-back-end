@@ -181,7 +181,7 @@ class TournamentRepository():
                 players_list = []
                 for result in results:
                         players_list.append(Player(id=result["player_id"],
-                                    name=result["first_name"],
+                                    first_name=result["first_name"],
                                     last_name=result["last_name"],
                                     email=result["email"],
                                     score=result["score"] ))
@@ -244,3 +244,26 @@ class TournamentRepository():
             raise
         else:
             return matches_list
+        
+    def get_history_tournament_player(self,player:Player):
+        if not player.id:
+            raise KeyError
+        try:
+            query= """SELECT t.id AS tournament_id,t.name AS tournament_name,t.capacity,t.total_points,
+                t.status,t.start_date,t.end_date,t.best_of,pr.player_id,MAX(pr.round) AS max_round
+            FROM (SELECT tournament_id, player1_id AS player_id, round FROM matches UNION ALL
+                SELECT tournament_id, player2_id AS player_id, round FROM matches
+            ) AS pr INNER JOIN tournaments t ON pr.tournament_id = t.id WHERE pr.player_id = %s
+                GROUP BY t.id, t.name, t.capacity, t.total_points, t.organizer_id, t.status, 
+                t.start_date, t.end_date, t.best_of, pr.player_id ORDER BY t.start_date DESC;"""
+            with self.db.get_connection() as conn:
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute(query,(player.id,))
+                results = cursor.fetchall()                
+                matches_list = []
+                for result in results :
+                     matches_list.append(result)
+        except IntegrityError:
+            raise
+        else:
+            return matches_list           
