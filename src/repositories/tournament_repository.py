@@ -1,4 +1,5 @@
 from src.models.tournament import Tournament
+from src.models.user import Player
 from mysql.connector.errors import IntegrityError,DatabaseError
 from src.exceptions.exceptions_database import NotValidCapacity,FutureDateNotAllowedError,StatusNotAllowed,InsufficentsPlayers
 from datetime import datetime
@@ -29,6 +30,8 @@ class TournamentRepository():
                     raise
                 else:
                     conn.commit()
+                    self.update(Tournament(id=tournament.id,status="En curso"))
+                    
         else:
             print("Faltan jugadores")
             raise InsufficentsPlayers
@@ -160,8 +163,32 @@ class TournamentRepository():
                 else:
                     return None
         except IntegrityError:
-            raise 
+            raise  
 
+    def get_players_inscribed_tournament(self,tournament:Tournament):
+        """Devuelve todos los players inscritos en un torneo especifico"""
+        if not tournament.id:
+            raise KeyError
+        try:
+            query = """SELECT  p.id as player_id, u.first_name,u.last_name,u.email,p.score 
+            FROM tournamentsxplayers tp INNER JOIN
+            players p ON p.id = tp.player_id INNER JOIN 
+            users u ON u.id = p.user_id WHERE tp.tournament_id=%s"""
+            with self.db.get_connection() as conn:
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute(query,(tournament.id,))
+                results = cursor.fetchall()
+                players_list = []
+                for result in results:
+                        players_list.append(Player(id=result["player_id"],
+                                    name=result["first_name"],
+                                    last_name=result["last_name"],
+                                    email=result["email"],
+                                    score=result["score"] ))
+                return players_list
+        except IntegrityError:
+            raise   
+    
     def get_all_matches_tournament(self,tournament:Tournament):
         if not tournament.id:
             raise KeyError

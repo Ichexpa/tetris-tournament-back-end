@@ -10,9 +10,9 @@ from src.db import DbError
 from mysql.connector.errors import IntegrityError
 from src.exceptions.exceptions_database import InsufficentsPlayers
 
-tournamnet_routes_bp = Blueprint("tournament_bp",__name__,url_prefix="/api/tournament")
+tournament_routes_bp = Blueprint("tournament_bp",__name__,url_prefix="/api/tournament")
 
-@tournamnet_routes_bp.route("/",methods=["GET"])
+@tournament_routes_bp.route("/",methods=["GET"])
 def get_tournaments():
     tournaments = TournamentRepository(app.db)
     filter = request.args
@@ -22,7 +22,7 @@ def get_tournaments():
     else:
         abort(404)
 
-@tournamnet_routes_bp.route("/create",methods=["POST"])
+@tournament_routes_bp.route("/create",methods=["POST"])
 def create_tournament():
     tournament_to_create = Tournament(name=request.json.get("name"),
                                       capacity=request.json.get("capacity"),
@@ -42,7 +42,7 @@ def create_tournament():
         else:
             abort(505)
 
-@tournamnet_routes_bp.route("/update",methods=["PATCH"])
+@tournament_routes_bp.route("/update",methods=["PATCH"])
 def update_tournament():    
     data_t = Tournament(**request.json)
     try:
@@ -54,7 +54,7 @@ def update_tournament():
     else:
         return jsonify({"message":"Se actualizo el torneo con éxito"}),201 
 
-@tournamnet_routes_bp.route("/<int:tournament_id>",methods=["DELETE"])
+@tournament_routes_bp.route("/<int:tournament_id>",methods=["DELETE"])
 def delete_tournament(tournament_id):    
     try:
         tournament = Tournament(id=tournament_id)
@@ -67,7 +67,7 @@ def delete_tournament(tournament_id):
     else:
         return jsonify({"message":"Se elimino el torneo con éxito"}),204
     
-@tournamnet_routes_bp.route("/brackets/<int:tournament_id>")
+@tournament_routes_bp.route("/brackets/<int:tournament_id>")
 def get_all_matches_tournament(tournament_id):
     try:
         tournament = Tournament(id=tournament_id)
@@ -79,7 +79,7 @@ def get_all_matches_tournament(tournament_id):
     else:
         return jsonify(list_matches),200
 
-@tournamnet_routes_bp.route("/start_tournament",methods = ["POST"])
+@tournament_routes_bp.route("/start_tournament",methods = ["POST"])
 def start_tournament():
     try:        
         tournament = Tournament(**request.json)
@@ -90,3 +90,15 @@ def start_tournament():
         abort(404)
     else:
         return jsonify({"message":"Torneo inciado con exito"}),200
+    
+@tournament_routes_bp.route("/player_inscribed/<int:tournament_id>",methods = ["GET"])
+def players_inscribed_tournament(tournament_id):
+    try:        
+        tournament = Tournament(id=tournament_id)
+        list_players = TournamentRepository(app.db).get_players_inscribed_tournament(tournament)
+    except IntegrityError:
+        abort(404)
+    else:
+        lista_player_dict = [obj.__dict__ for obj in list_players]
+        return jsonify(lista_player_dict),200
+    
