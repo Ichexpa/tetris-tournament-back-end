@@ -11,6 +11,7 @@ from src.controllers.tournament_controller import tournamnet_routes_bp
 from src.controllers.auth_controller import auth_routes_bp
 from src.controllers.player_controller import player_routes_bp
 from src.controllers.organizer_controller import organizer_routes_bp
+from src.controllers.match_controller import match_routes_bp
 from src.controllers.tournament_player_controller import tournament_player_bp
 
 load_dotenv()
@@ -52,7 +53,8 @@ def create_app():
     app.register_blueprint(organizer_routes_bp)
     app.register_blueprint(tournamnet_routes_bp)
     app.register_blueprint(tournament_player_bp) 
-
+    app.register_blueprint(match_routes_bp)
+    
     @app.route("/")
     def home():
         return "Welcome to Tetris API!"

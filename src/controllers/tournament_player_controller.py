@@ -8,7 +8,7 @@ from src.models.tournament_players import TournamentPlayers
 from src.repositories.tournament_players_repository import TournamentPlayersRepository
 from src.db import DbError
 from mysql.connector.errors import IntegrityError
-from exceptions.exceptions_database import UniqueViolationError
+from src.exceptions.exceptions_database import UniqueViolationError
 
 tournament_player_bp = Blueprint("tournament_player_bp",__name__,url_prefix="/api/players-tournament")
 
