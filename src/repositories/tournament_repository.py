@@ -1,13 +1,40 @@
 from src.models.tournament import Tournament
 from mysql.connector.errors import IntegrityError,DatabaseError
-from src.exceptions.exceptions_database import NotValidCapacity,FutureDateNotAllowedError,StatusNotAllowed
+from src.exceptions.exceptions_database import NotValidCapacity,FutureDateNotAllowedError,StatusNotAllowed,InsufficentsPlayers
 from datetime import datetime
+from src.utils.repository_functions import mix_id_players
+from flask import current_app as app
+from src.repositories.tournament_players_repository import TournamentPlayersRepository
 from src.utils.validate_functions import valid_date
 class TournamentRepository():
 
     def __init__(self,db):
         self.db = db
     
+
+    def start_tournament(self,tournament:Tournament):
+        """Crea un torneo a partir de dos procedimientos, pero antes verifica que el torneo
+         tenga los jugadores necesarios para inciar, luego mezcla sus ids para pasarlos al procedimiento """
+        tournament  = self.get_tournament_by_id(tournament)
+        list_participants  = TournamentPlayersRepository(app.db).get_participants_tournament(tournament)
+        if(tournament.capacity == len(list_participants)):
+            mixed_ids = mix_id_players(list_participants)
+            with self.db.get_connection() as conn:
+                try:
+                    cursor = conn.cursor()
+                    cursor.callproc("generate_initial_matches",(tournament.id,mixed_ids))
+                    cursor.callproc("link_tournament_matches",(tournament.id,))
+                except IntegrityError:
+                    conn.rollback()
+                    raise
+                else:
+                    conn.commit()
+        else:
+            print("Faltan jugadores")
+            raise InsufficentsPlayers
+        
+
+
     def find_all(self,filter:dict) -> list[dict]:
         """Devuelve todos los torneos. O devuelve los torneos en los que
         un jugador se inscribió.

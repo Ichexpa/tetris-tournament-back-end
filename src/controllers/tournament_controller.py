@@ -8,6 +8,7 @@ from src.models.tournament import Tournament
 from src.repositories.tournament_repository import TournamentRepository
 from src.db import DbError
 from mysql.connector.errors import IntegrityError
+from src.exceptions.exceptions_database import InsufficentsPlayers
 
 tournamnet_routes_bp = Blueprint("tournament_bp",__name__,url_prefix="/api/tournament")
 
@@ -77,3 +78,15 @@ def get_all_matches_tournament(tournament_id):
         abort(404)
     else:
         return jsonify(list_matches),200
+
+@tournamnet_routes_bp.route("/start_tournament",methods = ["POST"])
+def start_tournament():
+    try:        
+        tournament = Tournament(**request.json)
+        TournamentRepository(app.db).start_tournament(tournament)
+    except InsufficentsPlayers:
+        return jsonify({"message":"Faltan jugadores para iniciar el torneo"}),400
+    except IntegrityError:
+        abort(404)
+    else:
+        return jsonify({"message":"Torneo inciado con exito"}),200
