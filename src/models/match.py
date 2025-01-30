@@ -1,7 +1,7 @@
 class Match:
     def __init__(self,**kwargs):
         self.id = kwargs.get("id")
-        self.roudn = kwargs.get("round")
+        self.round = kwargs.get("round")
         self.player1_id = kwargs.get("player1_id")
         self.player2_id = kwargs.get("player2_id")
         self.score_p1 = kwargs.get("score_p1")

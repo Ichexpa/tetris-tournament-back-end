@@ -45,6 +45,8 @@ gespro/
 │   │   ├── user_model.py
 │   ├── repositories/
 │   │   ├── user_repository.py
+│   ├── exceptions/
+│   │   ├── custom_exceptions.py
 │   ├── services/
 │   │   ├── user_service.py
 │   ├── controllers/
