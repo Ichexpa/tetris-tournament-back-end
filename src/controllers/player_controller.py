@@ -30,7 +30,6 @@ def get_players(user_id):
                         "last_name": player.last_name,
                         "user_id": player.user_id,
                         "score": player.score,
-                        "ranking": player.ranking,
                         "created_at": player.created_at,
                     }
                 ),

@@ -34,5 +34,9 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     """Testing configuration."""
 
-    DB_HOST = "localhost"
+    DB_HOST = os.getenv("TEST_DB_HOST")
+    DB_PORT = os.getenv("TEST_DB_PORT")
+    DB_USER = os.getenv("TEST_DB_USER")
+    DB_PASSWORD = os.getenv("TEST_DB_PASSWORD")
+    DB_NAME = os.getenv("TEST_DB_NAME")
     TESTING = True

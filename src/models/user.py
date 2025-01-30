@@ -16,7 +16,6 @@ class Player(User):
         super().__init__(**kwargs)
         self.user_id = kwargs.get("user_id")
         self.score = kwargs.get("score")
-        self.ranking = kwargs.get("major")
 
     def __repr__(self):
         return f"<Player {self.email}>"

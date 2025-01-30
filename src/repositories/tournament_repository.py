@@ -1,6 +1,8 @@
 from src.models.tournament import Tournament
-from mysql.connector.errors import IntegrityError
-
+from mysql.connector.errors import IntegrityError,DatabaseError
+from src.exceptions.exceptions_database import NotValidCapacity,FutureDateNotAllowedError,StatusNotAllowed
+from datetime import datetime
+from src.utils.validate_functions import valid_date
 class TournamentRepository():
 
     def __init__(self,db):
@@ -35,6 +37,12 @@ class TournamentRepository():
     
     def save(self,tournament:Tournament):
         """Crea un torneo"""
+        valid_capacity = [8,16,32,64]
+        capacity = int(tournament.capacity)
+        if(capacity not in valid_capacity):
+            raise NotValidCapacity
+        if(not valid_date(tournament.start_date,tournament.end_date)):
+            raise FutureDateNotAllowedError
         with self.db.get_connection() as conn:
             cursor = conn.cursor()
             try:
@@ -46,7 +54,7 @@ class TournamentRepository():
                                  tournament.status or "Activo",
                                  tournament.start_date,
                                  tournament.end_date,
-                                 tournament.best_of,
+                                 tournament.best_of or 3,
                                  None))
             except IntegrityError:
                 conn.rollback()
@@ -71,13 +79,18 @@ class TournamentRepository():
             query = f"""UPDATE tournaments
                         SET {set_clause}
                         WHERE id = %s"""
+            print(query)
             with self.db.get_connection() as conn:
                 cursor = conn.cursor()
                 try:
                     cursor.execute(query,tuple(values))
                 except IntegrityError:
                     conn.rollback()
-                    raise    
+                    raise                
+                except DatabaseError as e:
+                    conn.rollback()
+                    if e.errno == 1265:
+                        raise StatusNotAllowed              
                 else:
                     conn.commit()
         except KeyError:
@@ -85,7 +98,6 @@ class TournamentRepository():
     
     def delete(self, tournament: Tournament):
         """Eliminar un torneo de acuerdo a su id"""
-
         if not tournament.id:
             raise IndexError
         query = "DELETE FROM tournaments WHERE id = %s"
@@ -99,6 +111,30 @@ class TournamentRepository():
             else:
                 conn.commit()
    
+    def get_tournament_by_id(self,tournament:Tournament):
+        if not tournament.id:
+            raise KeyError
+        try:
+            query = "SELECT * FROM tournaments WHERE id=%s"
+            with self.db.get_connection() as conn:
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute(query,(tournament.id,))
+                result = cursor.fetchone()
+                if result:
+                    return Tournament(id=result["id"],
+                                      name=result["name"],
+                                      capacity=result["capacity"],
+                                      total_points=result["total_points"],
+                                      organizer_id=result["organizer_id"],
+                                      status=result["status"],
+                                      start_date=result["start_date"],
+                                      end_date=result["end_date"],
+                                      best_of = result["best_of"] )
+                else:
+                    return None
+        except IntegrityError:
+            raise 
+
     def get_all_matches_tournament(self,tournament:Tournament):
         if not tournament.id:
             raise KeyError

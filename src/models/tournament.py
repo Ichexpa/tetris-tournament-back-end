@@ -1,6 +1,5 @@
 class Tournament():
-    def __init__(self,**kwargs):
-        print(kwargs.get("total_points"))
+    def __init__(self,**kwargs):        
         self.id = kwargs.get("id")
         self.name = kwargs.get("name")
         self.capacity = kwargs.get("capacity")
