@@ -2,7 +2,6 @@ from src.models.user import Player, Organizer
 from typing import Union
 from mysql.connector.errors import IntegrityError
 
-
 class UserRepository:
     def __init__(self, db):
         self.db = db
@@ -186,3 +185,5 @@ class UserRepository:
                 player.id = res[-1]
                 player.password = None
                 return player
+
+ 
