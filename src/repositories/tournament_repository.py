@@ -1,6 +1,6 @@
 from src.models.tournament import Tournament
 from mysql.connector.errors import IntegrityError,DatabaseError
-from exceptions.exceptions_database import NotValidCapacity,FutureDateNotAllowedError,StatusNotAllowed
+from src.exceptions.exceptions_database import NotValidCapacity,FutureDateNotAllowedError,StatusNotAllowed
 from datetime import datetime
 from src.utils.validate_functions import valid_date
 class TournamentRepository():

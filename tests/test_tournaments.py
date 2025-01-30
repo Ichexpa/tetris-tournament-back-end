@@ -5,7 +5,7 @@ from src.models.tournament import Tournament
 from src.repositories.tournament_repository import TournamentRepository
 from tests.utils import cleanup
 from mysql.connector.errors import IntegrityError
-from exceptions.exceptions_database import NotValidCapacity,FutureDateNotAllowedError,StatusNotAllowed
+from src.exceptions.exceptions_database import NotValidCapacity,FutureDateNotAllowedError,StatusNotAllowed
 from datetime import datetime
 
 @pytest.fixture

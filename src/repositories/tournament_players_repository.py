@@ -1,6 +1,6 @@
 from src.models.tournament_players import TournamentPlayers
 from mysql.connector.errors import IntegrityError
-from exceptions.exceptions_database import UniqueViolationError
+from src.exceptions.exceptions_database import UniqueViolationError
 class TournamentPlayersRepository():
 
     def __init__(self,db):
