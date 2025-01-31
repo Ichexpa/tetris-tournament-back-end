@@ -17,7 +17,6 @@ tournament_routes_bp = Blueprint("tournament_bp",__name__,url_prefix="/api/tourn
 def get_tournaments():
     tournaments = TournamentRepository(app.db)
     filter = request.args
-    print(filter)
     if tournaments:
         return jsonify(tournaments.find_all(filter)),200
     else:
@@ -112,4 +111,14 @@ def players_history_matches(player_id):
         abort(404)
     else:
         return jsonify(list_matches),200
+    
+@tournament_routes_bp.route("/<int:tournament_id>",methods = ["GET"])
+def get_tournament_by_id(tournament_id):
+    try:        
+        tournament = Tournament(id=tournament_id)
+        result = TournamentRepository(app.db).get_tournament_by_id(tournament)
+    except IntegrityError:
+        abort(404)
+    else:
+        return jsonify(result.__dict__),200
     
