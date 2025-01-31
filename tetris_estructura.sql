@@ -42,27 +42,7 @@ CREATE TABLE `matches` (
   CONSTRAINT `matches_ibfk_1` FOREIGN KEY (`player1_id`) REFERENCES `players` (`id`) ON DELETE SET NULL,
   CONSTRAINT `matches_ibfk_2` FOREIGN KEY (`player2_id`) REFERENCES `players` (`id`) ON DELETE SET NULL,
   CONSTRAINT `matches_ibfk_3` FOREIGN KEY (`winner_id`) REFERENCES `players` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=190 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `matches_results`
---
-
-DROP TABLE IF EXISTS `matches_results`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `matches_results` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `match_id` int unsigned DEFAULT NULL,
-  `player_id` int unsigned NOT NULL,
-  `points` int DEFAULT '0',
-  PRIMARY KEY (`id`),
-  KEY `fk_matches_result_player` (`player_id`),
-  KEY `fk_matches_result_match` (`match_id`),
-  CONSTRAINT `fk_matches_result_match` FOREIGN KEY (`match_id`) REFERENCES `matches` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `fk_matches_result_player` FOREIGN KEY (`player_id`) REFERENCES `players` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=239 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -78,7 +58,7 @@ CREATE TABLE `organizers` (
   PRIMARY KEY (`id`),
   KEY `fk_organizer_user_idx` (`user_id`),
   CONSTRAINT `fk_organizer_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -95,7 +75,7 @@ CREATE TABLE `players` (
   PRIMARY KEY (`id`),
   KEY `fk_player_user_idx` (`user_id`),
   CONSTRAINT `fk_student_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -118,7 +98,7 @@ CREATE TABLE `tournaments` (
   PRIMARY KEY (`id`),
   KEY `fk_tournament_organizer` (`organizer_id`),
   CONSTRAINT `fk_tournament_organizer` FOREIGN KEY (`organizer_id`) REFERENCES `organizers` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -140,7 +120,7 @@ CREATE TABLE `tournamentsxplayers` (
   KEY `fk_tournamentXplayers_tournament` (`tournament_id`),
   CONSTRAINT `fk_tournamentXplayers_player` FOREIGN KEY (`player_id`) REFERENCES `players` (`id`),
   CONSTRAINT `fk_tournamentXplayers_tournament` FOREIGN KEY (`tournament_id`) REFERENCES `tournaments` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=99 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=104 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -159,7 +139,7 @@ CREATE TABLE `users` (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email_UNIQUE` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -221,7 +201,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `create_tournament`(
 BEGIN
 	IF status IN('Activo','En curso','Finalizado','Cancelado') THEN
 		INSERT INTO tournaments(name,capacity,total_points,organizer_id,status,start_date,end_date,best_of) 
-		VALUE(name,capacity,total_points,(SELECT o.id FROM organizers o INNER JOIN users u ON u.id = p.user_id WHERE u.id=user_id),status,start_date,end_date,best_of);
+		VALUE(name,capacity,total_points,(SELECT o.id FROM organizers o INNER JOIN users u ON u.id = o.user_id WHERE u.id=user_id),status,start_date,end_date,best_of);
         SET tournament_id = LAST_INSERT_ID();
 	ELSE
         SIGNAL SQLSTATE '45000'
@@ -246,33 +226,27 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `generate_initial_matches`(
     IN tournament_id INT, 
-    IN player_ids_list VARCHAR(255)  -- Nueva entrada para recibir los IDs de los jugadores
+    IN player_ids_list VARCHAR(255)  
 )
 BEGIN
     DECLARE total_rounds INT;
     DECLARE current_round INT;
     DECLARE num_matches INT;
     DECLARE num_players INT;
-    DECLARE player_offset INT DEFAULT 1;  -- Empezar desde 1
+    DECLARE player_offset INT DEFAULT 1;  
     DECLARE player_id VARCHAR(10);
     DECLARE player1_id INT;
     DECLARE player2_id INT;
     DECLARE i INT;
     
-    -- Obtengo la cantidad de jugadores permitidos en el torneo
     SET num_players = (SELECT capacity FROM tournaments WHERE id = tournament_id);
 
-    -- Calcular el número total de rondas
     SET total_rounds = CEIL(LOG2(num_players));
     
-    
-
-    -- Crear partidos para cada ronda
     SET current_round = 1;
 
-    -- Dividir la lista de IDs en partes
     WHILE current_round <= total_rounds DO
-        -- Calcular el número de partidos en la ronda actual
+        
         SET num_matches = POWER(2, total_rounds - current_round);
 
         SET i = 1;
@@ -280,27 +254,22 @@ BEGIN
         WHILE i <= num_matches DO
             SET player1_id = NULL;
             SET player2_id = NULL;
-
-            -- Asignar jugadores aleatoriamente usando la lista de IDs
+           
             IF current_round = 1 THEN
-                -- Obtener el ID del primer jugador
+               
                 SET player1_id = SUBSTRING_INDEX(SUBSTRING_INDEX(player_ids_list, ',', player_offset), ',', -1);
                 SET player_offset = player_offset + 1;
 
-                -- Obtener el ID del segundo jugador
                 SET player2_id = SUBSTRING_INDEX(SUBSTRING_INDEX(player_ids_list, ',', player_offset), ',', -1);
                 SET player_offset = player_offset + 1;
             END IF;
 
-            -- Insertar el partido en la tabla sin vincular (`next_match_id` será NULL)
             INSERT INTO matches (round, player1_id, player2_id, next_match_id, tournament_id)
             VALUES (current_round, player1_id, player2_id, NULL, tournament_id);
 
-            -- Incrementar el contador del partido actual
             SET i = i + 1;
         END WHILE;
 
-        -- Pasar a la siguiente ronda
         SET current_round = current_round + 1;
     END WHILE;
 END ;;
@@ -330,45 +299,37 @@ BEGIN
     DECLARE i INT;
     DECLARE match_offset INT;
 
-    -- Calcular el número total de rondas
     SET total_rounds = (SELECT MAX(round) FROM matches WHERE tournament_id = p_tournament_id);
 
-    -- Enlazar partidos desde la primera ronda hasta la penúltima
     SET current_round = 1;
 
     WHILE current_round < total_rounds DO
-        -- Enlazar cada partido de la ronda actual
+       
         SET i = 1;
 
         WHILE i <= (SELECT COUNT(*) FROM matches WHERE tournament_id = p_tournament_id AND round = current_round) DO
-            -- Calcular el OFFSET para obtener el partido actual
+            
             SET match_offset = i - 1;
 
-            -- Obtener el ID del partido actual utilizando el OFFSET
             SELECT id INTO match_id
             FROM matches
             WHERE tournament_id = p_tournament_id AND round = current_round
             LIMIT 1 OFFSET match_offset;
 
-            -- Calcular el OFFSET para el partido en la siguiente ronda
             SET match_offset = FLOOR((i - 1) / 2);
 
-            -- Obtener el ID del partido en la siguiente ronda
             SELECT id INTO next_match_id
             FROM matches
             WHERE tournament_id = p_tournament_id AND round = current_round + 1
             LIMIT 1 OFFSET match_offset;
 
-            -- Actualizar el `next_match_id` del partido actual
             UPDATE matches
             SET next_match_id = next_match_id
             WHERE id = match_id AND tournament_id = p_tournament_id;
 
-            -- Incrementar el contador del partido actual
             SET i = i + 1;
         END WHILE;
-
-        -- Pasar a la siguiente ronda
+        
         SET current_round = current_round + 1;
     END WHILE;
 END ;;
@@ -387,4 +348,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-01-28 17:46:40
+-- Dump completed on 2025-01-31  2:13:18
