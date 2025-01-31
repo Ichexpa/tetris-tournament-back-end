@@ -109,7 +109,6 @@ class TournamentRepository():
             query = f"""UPDATE tournaments
                         SET {set_clause}
                         WHERE id = %s"""
-            print(query)
             with self.db.get_connection() as conn:
                 cursor = conn.cursor()
                 try:

@@ -1,11 +1,9 @@
 from src.models.match import Match
 from flask import current_app as app
 from mysql.connector.errors import IntegrityError
-from src.exceptions.exceptions_database import UniqueViolationError
 from src.repositories.tournament_repository import TournamentRepository
 from src.models.tournament import Tournament
-from src.models.user import Player
-from mysql.connector.errors import IntegrityError,DatabaseError
+from mysql.connector.errors import IntegrityError
 
 
 class MatchRepository():
@@ -15,21 +13,27 @@ class MatchRepository():
 
     def update_brackets_results(self,match:Match):
         tornament = TournamentRepository(app.db).get_tournament_by_id(Tournament(id=match.tournament_id))
+        tournament_format_score = 2 if tornament.best_of == 3 else 3
         set_clause = "score_p1=%s, score_p2=%s "
-        if(tornament.best_of<=match.score_p1):
+        if(tournament_format_score<=match.score_p1):
             set_clause+=f", winner_id = {match.player1_id}"
-            self.update_winner_next_match(Match(id=match.next_match_id,
+            if match.next_match_id is not None:                
+                self.update_winner_next_match(Match(id=match.next_match_id,
                                                 winner_id = match.player1_id))
+            else:
+                TournamentRepository(app.db).update(Tournament(id=tornament.id,status="Finalizado"))            
         
-        elif (tornament.best_of<=match.score_p2):
+        elif (tournament_format_score<=match.score_p2):
             set_clause+=f", winner_id = {match.player2_id}"
-            self.update_winner_next_match(Match(id=match.next_match_id,
+            if match.next_match_id is not None:
+                self.update_winner_next_match(Match(id=match.next_match_id,
                                                 winner_id = match.player2_id))
-        
+            else:
+                TournamentRepository(app.db).update(Tournament(id=tornament.id,status="Finalizado")) 
         query = f"""UPDATE matches
                         SET {set_clause}
                         WHERE id = %s"""
-        print(query)
+        
         with self.db.get_connection() as conn:
             cursor = conn.cursor()
             try:
@@ -67,7 +71,6 @@ class MatchRepository():
 
     def update_winner_next_match(self,match:Match):
         set_clause=None
-        print(match.id)
         next_match = self.get_match_by_id(Match(id=match.id))
         if next_match:
             if not next_match.player1_id:
@@ -78,7 +81,7 @@ class MatchRepository():
             query = f"""UPDATE matches
                             SET {set_clause}
                             WHERE id = %s"""        
-            print(query)
+            
             with self.db.get_connection() as conn:
                 cursor = conn.cursor()
                 try:

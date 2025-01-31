@@ -63,7 +63,6 @@ class UserRepository:
                 """
                 cursor.execute(query, (email,))
                 result = cursor.fetchone()
-                print(result)
                 if result:
                     if result["is_player"]:
                         user = Player(
@@ -186,4 +185,20 @@ class UserRepository:
                 player.password = None
                 return player
 
- 
+    def get_player_by_id(self, player_id: int)->Player:
+        try:
+            with self.db.get_connection() as conn:
+                cursor = conn.cursor(dictionary=True)
+                query = """
+                SELECT p.*, u.email, u.first_name, u.last_name, u.created_at
+                FROM players p
+                LEFT JOIN users u ON u.id= p.user_id WHERE p.id = %s
+                """
+                cursor.execute(query,(player_id,))
+                result = cursor.fetchone()
+        except IntegrityError:
+            raise
+        else:
+            if result:
+                return result
+            return None   

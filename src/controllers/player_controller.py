@@ -6,6 +6,7 @@ from flask import Blueprint
 
 from src.models.user import Player
 from src.services.auth_service import AuthService
+from src.repositories.user_repository import UserRepository
 from src.db import DbError
 
 player_routes_bp = Blueprint(
@@ -36,3 +37,12 @@ def get_players(user_id):
                 200,
             )
         abort(404)
+
+@player_routes_bp.route("/by_id/<int:player_id>", methods=["GET"])
+def get_players_by_id(player_id):
+    try:
+        player = UserRepository(app.db).get_player_by_id(player_id)
+    except DbError:
+        abort(500)
+    else:
+        return jsonify(player),200
