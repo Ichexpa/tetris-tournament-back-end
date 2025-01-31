@@ -121,4 +121,13 @@ def get_tournament_by_id(tournament_id):
         abort(404)
     else:
         return jsonify(result.__dict__),200
-    
+
+@tournament_routes_bp.route("/player_ranking",methods = ["GET"])
+def players_ranking():
+    try:
+        ranking_list = TournamentRepository(app.db).get_ranking_player()
+        if ranking_list is None: 
+            return jsonify({"error": "No se pudo obtener el ranking"}), 500
+        return jsonify(ranking_list), 200
+    except IntegrityError:
+        abort(404)

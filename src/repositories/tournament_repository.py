@@ -52,7 +52,8 @@ class TournamentRepository():
                 user_id =  filter.get("user_id")
                 inscribed = filter.get("inscribed",False).lower() == 'true'
                 query = """SELECT t.* FROM tournaments t 
-                    LEFT JOIN tournamentsxplayers tp on tp.tournament_id=t.id AND tp.player_id = %s
+                    LEFT JOIN tournamentsxplayers tp on tp.tournament_id=t.id AND 
+                    tp.player_id = (SELECT p.id FROM players p INNER JOIN users u ON u.id = p.user_id WHERE u.id = %s )
                     WHERE tp.tournament_id"""
                 if(user_id and inscribed):
                     query += " IS NOT NULL"
@@ -169,7 +170,7 @@ class TournamentRepository():
         if not tournament.id:
             raise KeyError
         try:
-            query = """SELECT  p.id as player_id, u.first_name,u.last_name,u.email,p.score 
+            query = """SELECT  u.id as player_id, u.first_name,u.last_name,u.email,p.score 
             FROM tournamentsxplayers tp INNER JOIN
             players p ON p.id = tp.player_id INNER JOIN 
             users u ON u.id = p.user_id WHERE tp.tournament_id=%s"""
@@ -265,4 +266,21 @@ class TournamentRepository():
         except IntegrityError:
             raise
         else:
-            return matches_list           
+            return matches_list   
+
+
+    def get_ranking_player(self):
+        try:
+            query= """SELECT u.id,p.score,u.first_name,u.last_name,u.email,p.score
+              FROM players p INNER JOIN users u ON u.id=p.user_id ORDER BY(p.score) DESC;"""
+            with self.db.get_connection() as conn:
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute(query)
+                results = cursor.fetchall()                
+                ranking_list = []
+                for result in results :
+                     ranking_list.append(result)
+        except IntegrityError:
+            raise
+        else:
+            return ranking_list          
